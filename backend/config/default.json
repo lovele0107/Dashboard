@@ -1,0 +1,12 @@
+{
+    "cse": {
+        "ip": "192.168.1.30",
+        "port": 8080,
+        "id": "id-in",
+        "name": "cse-in",
+        "releaseVersion": "3",
+        "originator": "CAdmin"
+    }
+
+
+}
