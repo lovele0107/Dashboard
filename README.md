@@ -2,9 +2,9 @@
 IoT Dashboard for oneM2M Platform
 
 ### Installation
-cd frontend
-npm install
-cd backend
+cd frontend 
+npm install 
+cd backend 
 npm install
 
 ### configuration
