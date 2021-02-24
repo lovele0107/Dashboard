@@ -1,8 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 var config = require('config');
-var cseurl = "http://" + config.cse.ip + ":" + config.cse.port + "/~/" + config.cse.id + "/" + config.cse.name
-const route = require('../routes/stuff');
+var cseurl = "http://" + config.cse.ip + ":" + config.cse.port + "/" + config.cse.name
+const route = require('../routes/oneM2M');
 var releaseVersion = config.cse.releaseVersion;
 var originator = config.cse.originator;
 
@@ -61,59 +61,59 @@ exports.getCin = async(req, res, next) => {
             error: 'an error has occured trying to fetch the value'
         })
     }
-
 };
-
 
 async function retrieveAllAE() {
     var uri = cseurl + "?rcn=4";
     var requestId = Math.floor(Math.random() * 10000);
-
-    try {
+	var headers={
+				"X-M2M-Origin": originator,
+				"Content-Type": "application/json",
+				'Accept': 'application/json',
+                "X-M2M-RI": requestId
+			}
+	if (releaseVersion != "1"){
+		headers = Object.assign(headers, {"X-M2M-RVI":releaseVersion});
+	}
+    
+	try {
         const result = await axios({
             url: uri,
             method: 'get',
             timeout: 8000,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-M2M-Origin': originator,
-                'X-M2M-RI': requestId,
-                'Accept': 'application/json',
-                'X-M2M-RVI': releaseVersion
-            }
+            headers: headers
         })
         if (result.status == 200) {
             console.log(result.status)
         }
 
-        return result.data["m2m:cb"]["m2m:ae"];
+        return result.data;
 
     } catch (err) {
         console.log('can not retrieve data');
-
     }
-
 
 }
 
 async function retrieveCnts(name) {
     var uri = cseurl + "/" + name + "?rcn=4";
     var requestId = Math.floor(Math.random() * 10000);
-
-    try {
+	var headers={
+				"X-M2M-Origin": originator,
+				"Content-Type": "application/json",
+				'Accept': 'application/json',
+                "X-M2M-RI": requestId
+			}
+	if (releaseVersion != "1"){
+		headers = Object.assign(headers, {"X-M2M-RVI":releaseVersion});
+	}
+    
+	try {
         const result = await axios({
             url: uri,
             method: 'get',
-
-            timeout: 8000,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-M2M-Origin': originator,
-                'X-M2M-RI': requestId,
-                'Accept': 'application/json',
-                'X-M2M-RVI': releaseVersion
-
-            }
+			timeout: 8000,
+            headers: headers
         })
         if (result.status == 200) {
             console.log(result.status)
@@ -122,29 +122,29 @@ async function retrieveCnts(name) {
 
     } catch (err) {
         console.log('can not retrieve data');
-
     }
-
 
 }
 
 async function retrieveAllCin(name, cntname) {
     var uri = cseurl + "/" + name + "/" + cntname + "?rcn=4";
     var requestId = Math.floor(Math.random() * 10000);
+	var headers={
+				"X-M2M-Origin": originator,
+				"Content-Type": "application/json",
+				'Accept': 'application/json',
+                "X-M2M-RI": requestId
+			}
+	if (releaseVersion != "1"){
+		headers = Object.assign(headers, {"X-M2M-RVI":releaseVersion});
+	}
 
     try {
         const result = await axios({
             url: uri,
             method: 'get',
-
-            timeout: 8000,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-M2M-Origin': originator,
-                'X-M2M-RI': requestId,
-                'Accept': 'application/json',
-                'X-M2M-RVI': releaseVersion
-            },
+			timeout: 8000,
+            headers: headers,
 
         })
         if (result.status == 200) {
@@ -154,29 +154,29 @@ async function retrieveAllCin(name, cntname) {
 
     } catch (err) {
         console.log('can not retrieve data');
-
     }
 
-
 }
-
 
 async function retrieveCin(name, cntname) {
     var uri = cseurl + "/" + name + "/" + cntname + "/la";
     var requestId = Math.floor(Math.random() * 10000);
+	var headers={
+				"X-M2M-Origin": originator,
+				"Content-Type": "application/json",
+				'Accept': 'application/json',
+                "X-M2M-RI": requestId
+			}
+	if (releaseVersion != "1"){
+		headers = Object.assign(headers, {"X-M2M-RVI":releaseVersion});
+	}
+
     try {
         const result = await axios({
             url: uri,
             method: 'get',
-
             timeout: 8000,
-            headers: {
-                'Content-Type': 'application/json',
-                'X-M2M-Origin': originator,
-                'X-M2M-RI': requestId,
-                'Accept': 'application/json',
-                'X-M2M-RVI': releaseVersion
-            }
+            headers: headers
         })
         if (result.status == 200) {
             console.log(result.status)
@@ -185,13 +185,9 @@ async function retrieveCin(name, cntname) {
 
     } catch (err) {
         console.log('can not retrieve data');
-
     }
 
-
 }
-
-
 
 function random(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);

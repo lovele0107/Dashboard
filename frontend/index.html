@@ -19,24 +19,21 @@
 
     <script>
        
-        var cseUri = "http://192.168.1.20:3000";
-        var cseName = "server";
+        var backendUri = "http://127.0.0.1:3000";
+        var backendName = "server";
         var refresh = 5000;
 
         function getAEs() {
             $.ajax({
                 type: "GET",
-                url: cseUri + "/all",
+                url: backendUri + "/all",
                 headers: {
-
-                    "Content-Type": "application/json"
-
+					"Content-Type": "application/json"
                 },
                 body: "json",
                 success: function(body, code) {
                     console.log(body);
-                    //body["m2m:cb"].ae.forEach(function(ae) {
-                    body.forEach(function(ae) {
+                    body["m2m:cb"]["m2m:ae"].forEach(function(ae) {
                         getCnts(ae.rn)
                     });
                 },
@@ -47,11 +44,9 @@
         function getCnts(ae_name) {
             $.ajax({
                 type: "GET",
-                url: cseUri + "/" + cseName + "/" + ae_name,
+                url: backendUri + "/" + backendName + "/" + ae_name,
                 headers: {
-
                     "Content-Type": "application/json",
-
                 },
                 body: "json",
                 success: function(body, code) {
@@ -59,12 +54,13 @@
                     if (body["m2m:ae"]["m2m:cnt"] != undefined) {
                         body["m2m:ae"]["m2m:cnt"].forEach(function(cnt) {
 
-                            $('#cards').append(
-                                '<div id="' + ae_name + '-' + cnt.rn + '-chart"></div><br>'
-                            );
-                            console.log('cnt.rn = ' + cnt.rn)
-                            getAllCin(ae_name, cnt.rn)
-
+							if(cnt.rn != "COMMAND"){
+								$('#cards').append(
+									'<div id="' + ae_name + '-' + cnt.rn + '-chart"></div><br>'
+								);
+								console.log('cnt.rn = ' + cnt.rn)
+								getAllCin(ae_name, cnt.rn)
+							}
                             //displayChart(ae_name,cnt.rn,data);
 
                         });
@@ -77,11 +73,9 @@
         function getCin(ae_name, cnt_name, series) {
             $.ajax({
                 type: "GET",
-                url: cseUri + "/" + cseName + "/" + ae_name + "/" + cnt_name + "/la",
+                url: backendUri + "/" + backendName + "/" + ae_name + "/" + cnt_name + "/la",
                 headers: {
-
                     "Content-Type": "application/json",
-
                 },
                 body: "json",
                 success: function(body, code) {
@@ -103,34 +97,47 @@
         function getAllCin(ae_name, cnt_name) {
             $.ajax({
                 type: "GET",
-                url: cseUri + "/" + cseName + "/" + ae_name + "/" + cnt_name,
+                url: backendUri + "/" + backendName + "/" + ae_name + "/" + cnt_name,
                 headers: {
-
                     "Content-Type": "application/json",
-
-
                 },
                 body: "json",
                 success: function(body, code) {
                     console.log(body);
-                    //var cins = body["m2m:cnt"].cin;
                     var cins = body["m2m:cnt"]["m2m:cin"];
-                    var data = [];
-
-                    for (var i = 0; i < cins.length; i++) {
-                        var cin = cins[i];
+                    var history = [];
+					var data = [];
+					
+					for (var i = 0; i < cins.length; i++) {
+                        var added = false;
+						var cin = cins[i];
                         var dat = new Date(convertDate(cin.lt));
                         var x = dat.getTime();
                         var y = parseInt(cin.con);
-                        console.log(x + " " + y)
-                            //series.data = [x, y];
-                        data.push([x, y]);
-
-                        //series.addPoint([x, y], true, true);
-
+                        console.log("Actual x, y: " + x + " " + y)
+                        
+						for(var j=0;j<history.length;j++){
+							if(history[j][0]>x){
+								history.splice(j,0, [x,y]);
+								added = true;
+								break;
+							}
+						}
+						if(!added){
+							if(history.length==1){
+								if(history[0][0]>x){
+									history.splice(0, 0, [x, y]);
+								} else {
+									history.push([x, y]);
+								}
+							} else {
+								history.push([x,y]);
+							}
+						}
                     }
-
-
+					    
+					data = history;
+					
                     displayChart(ae_name, cnt_name, data)
                         // var data = [];
                         // var time = (new Date()).getTime();
